@@ -1,9 +1,9 @@
 FROM node:25 AS frontend
 WORKDIR /app
-COPY frontend/package*.json ./
-RUN npm ci                        
+COPY frontend/package.json frontend/yarn.lock ./
+RUN yarn install --frozen-lockfile
 COPY frontend/ .
-RUN npm run build
+RUN yarn build
 
 FROM golang:1.25 AS backend
 WORKDIR /app
