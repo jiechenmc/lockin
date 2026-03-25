@@ -7,7 +7,7 @@ interface Record {
   Ack: boolean;
 }
 
-const RecordTable = () => {
+const RecordTable = ({ refresh }: { refresh: number }) => {
   const [records, setRecords] = useState<Record[]>([]);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const RecordTable = () => {
       }
     };
     fetchRecords();
-  }, []);
+  }, [refresh]);
 
   return (
     <div className="overflow-x-auto">
@@ -31,7 +31,7 @@ const RecordTable = () => {
           <tr>
             <th>#</th>
             <th>Name</th>
-            <th>Created At</th>
+            <th>Check in Time</th>
             <th>Ack</th>
           </tr>
         </thead>
