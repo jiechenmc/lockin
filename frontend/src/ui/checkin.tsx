@@ -81,6 +81,7 @@ const CheckInCard = ({ name, setRefresh }: CheckInCardProto) => {
           body: JSON.stringify({ name, tz }),
         });
         if (!res.ok) console.error("failed to add record");
+        setRefresh((i) => i + 1);
       } catch (err) {
         console.error("request failed", err);
       }
