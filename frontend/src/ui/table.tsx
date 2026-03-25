@@ -36,31 +36,32 @@ const RecordTable = ({ refresh }: { refresh: number }) => {
           </tr>
         </thead>
         <tbody>
-          {records.map((record, i) => (
-            <tr
-              key={record.ID}
-              className={
-                new Date(record.CreatedAt).toDateString() ===
-                new Date().toDateString()
-                  ? "bg-base-200"
-                  : ""
-              }
-            >
-              <th>{i + 1}</th>
-              <td>{record.Name}</td>
-              <td>
-                {new Date(record.CreatedAt).toLocaleString("en-US", {
-                  month: "2-digit",
-                  day: "2-digit",
-                  year: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })}
-              </td>
-              <td>{record.Ack ? "✅" : "❌"}</td>
-            </tr>
-          ))}
+          {records &&
+            records.map((record, i) => (
+              <tr
+                key={record.ID}
+                className={
+                  new Date(record.CreatedAt).toDateString() ===
+                  new Date().toDateString()
+                    ? "bg-base-200"
+                    : ""
+                }
+              >
+                <th>{i + 1}</th>
+                <td>{record.Name}</td>
+                <td>
+                  {new Date(record.CreatedAt).toLocaleString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
+                </td>
+                <td>{record.Ack ? "✅" : "❌"}</td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>
