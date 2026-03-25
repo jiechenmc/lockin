@@ -1,10 +1,14 @@
-FROM node:20 AS frontend
+FROM node:25 AS frontend
 WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci                        
 COPY frontend/ .
-RUN npm install && npm run build
+RUN npm run build
 
 FROM golang:1.25 AS backend
 WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download 
 COPY . .
 COPY --from=frontend /app/dist ./dist
 RUN go build -o server .
