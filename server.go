@@ -20,7 +20,7 @@ func main() {
 	db := database.Connect()
 	defer db.Conn.Close()
 
-	if err := db.ResetTable(); err != nil {
+	if err := db.CreateTable(); err != nil {
 		log.Fatal("failed to create table:", err)
 	}
 
