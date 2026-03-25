@@ -4,6 +4,8 @@ interface CheckInCardProto {
   name: string;
 }
 
+const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 const CheckInCard = ({ name }: CheckInCardProto) => {
   const [totalSeconds, setTotalSeconds] = useState(3600);
   const [running, setRunning] = useState(false);
@@ -11,6 +13,31 @@ const CheckInCard = ({ name }: CheckInCardProto) => {
 
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
+
+  useEffect(() => {
+    const fetchLastRecord = async () => {
+      try {
+        const res = await fetch(
+          `/api/get?name=${encodeURIComponent(name)}&tz=${encodeURIComponent(tz)}`,
+        );
+        if (!res.ok) return;
+
+        const record = await res.json();
+        const createdAt = new Date(record.CreatedAt);
+        const elapsed = Math.floor((Date.now() - createdAt.getTime()) / 1000);
+        const remaining = 3600 - elapsed;
+
+        if (remaining > 0) {
+          setTotalSeconds(remaining);
+          setRunning(true);
+        }
+      } catch (err) {
+        console.error("failed to fetch last record", err);
+      }
+    };
+
+    fetchLastRecord();
+  }, [name]);
 
   useEffect(() => {
     if (running) {
@@ -28,11 +55,23 @@ const CheckInCard = ({ name }: CheckInCardProto) => {
     return () => clearInterval(intervalRef.current!);
   }, [running]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!running) {
-      setTotalSeconds(3600); // reset
+      setTotalSeconds(3600);
       setRunning(true);
-    } else if (!running && totalSeconds > 0) setRunning(true);
+      try {
+        const res = await fetch("/api/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, tz }),
+        });
+        if (!res.ok) console.error("failed to add record");
+      } catch (err) {
+        console.error("request failed", err);
+      }
+    } else if (!running && totalSeconds > 0) {
+      setRunning(true);
+    }
   };
 
   return (
@@ -72,6 +111,24 @@ const CheckInCard = ({ name }: CheckInCardProto) => {
             </div>
           </div>
         </div>
+        {totalSeconds === 0 && !running && (
+          <button
+            onClick={async () => {
+              try {
+                await fetch(
+                  `/api/ack?name=${encodeURIComponent(name)}&tz=${encodeURIComponent(tz)}`,
+                  {
+                    method: "PATCH",
+                  },
+                );
+              } catch (err) {
+                console.error("failed to ack", err);
+              }
+            }}
+          >
+            Ack
+          </button>
+        )}
       </div>
     </>
   );

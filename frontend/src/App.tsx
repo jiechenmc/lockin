@@ -1,11 +1,13 @@
 // import { useState, useEffect } from "react";
 import CheckInCard from "./ui/checkin";
+import RecordTable from "./ui/table";
 
 function App() {
   return (
     <>
-      <CheckInCard name={"Jie"}></CheckInCard>
-      <CheckInCard name={"Kelly"}></CheckInCard>
+      <CheckInCard name={"Jie Chen"}></CheckInCard>
+      <CheckInCard name={"Kelly Chen"}></CheckInCard>
+      <RecordTable />
     </>
   );
 }

@@ -14,7 +14,8 @@ import (
 type Record struct {
 	ID        int64     `bun:"id,pk,autoincrement"`
 	Name      string    `bun:"name,notnull"`
-	CreatedAt time.Time `bun:"createdAt,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull"`
+	Ack       bool      `bun:"ack,notnull"`
 }
 
 type DBServer struct {
@@ -52,12 +53,21 @@ func (s *DBServer) AddRecord(name string) (sql.Result, error) {
 	return s.Conn.NewInsert().Model(record).Exec(context.Background())
 }
 
-func (s *DBServer) GetLastRecord(name string) (*Record, error) {
+func (s *DBServer) GetLastRecord(name string, tz string) (*Record, error) {
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		loc = time.UTC
+	}
+
+	now := time.Now().In(loc)
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+
 	record := &Record{}
-	err := s.Conn.NewSelect().
+	err = s.Conn.NewSelect().
 		Model(record).
 		Where("name = ?", name).
-		Where("created_at >= ?", time.Now().Add(-60*time.Minute)).
+		Where("created_at >= ?", startOfDay).
+		OrderExpr("created_at DESC").
 		Limit(1).
 		Scan(context.Background())
 	if err != nil {
@@ -65,6 +75,7 @@ func (s *DBServer) GetLastRecord(name string) (*Record, error) {
 	}
 	return record, nil
 }
+
 func (s *DBServer) GetAllRecord() ([]Record, error) {
 	var records []Record
 	err := s.Conn.NewSelect().
@@ -74,4 +85,22 @@ func (s *DBServer) GetAllRecord() ([]Record, error) {
 		return nil, err
 	}
 	return records, nil
+}
+
+func (s *DBServer) AckRecord(name string, tz string) error {
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		loc = time.UTC // fallback
+	}
+
+	now := time.Now().In(loc)
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+
+	_, err = s.Conn.NewUpdate().
+		Model((*Record)(nil)).
+		Set("ack = ?", true).
+		Where("name = ?", name).
+		Where("created_at >= ?", startOfDay).
+		Exec(context.Background())
+	return err
 }
