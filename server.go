@@ -73,7 +73,8 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
 	r.Use(ZerologMiddleware())
 	r.Use(otelgin.Middleware("lockin"))
 
