@@ -14,7 +14,7 @@ interface CheckInCardProto {
 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const CheckInCard = ({ name, setRefresh }: CheckInCardProto) => {
-  const [totalSeconds, setTotalSeconds] = useState(0);
+  const [totalSeconds, setTotalSeconds] = useState(-1);
   const [running, setRunning] = useState(false);
   const [acked, setAcked] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -42,7 +42,7 @@ const CheckInCard = ({ name, setRefresh }: CheckInCardProto) => {
         } else if (remaining > 0) {
           setTotalSeconds(remaining);
           setRunning(true);
-        } else {
+        } else if (record) {
           setTotalSeconds(0);
           setRunning(false);
         }
